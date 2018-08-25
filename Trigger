@@ -1,0 +1,18 @@
+Trigger:
+SET SEARCH_PATH TO Olympic;
+	
+	CREATE FUNCTION mytrg()
+		RETURNS TRIGGER AS $BODY$
+	DECLARE 
+		rankv participates.rank%TYPE;
+	BEGIN
+		SELECT rank into rankv from participates where participates.eid = eid;
+		If rankv>rank then
+		rankv = rankv-1; 
+		UPDATE participates SET rank = rankv;
+		End if;
+		RETURN NULL;
+	END;$BODY$ LANGUAGE plpgsql;
+	CREATE TRIGGER trg
+	BEFORE DELETE ON participates
+	FOR EACH ROW EXECUTE PROCEDURE mytrg('intger' ,'intger','intger','intger','intger','intger');
