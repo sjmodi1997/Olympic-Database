@@ -1,0 +1,87 @@
+Queries:
+1) List the name and age of competitor in 100-meter race in Olympic 2012. 
+
+2) List the full name of competitor in Olympics 2008 from india for individual events.
+3) For each country, display the country name and the total number of participants(solo), in descending order of the number of competitors for Olympic 2012.
+4) Count  total  number olympic-wise  participants from India since 2000.
+5) Count  total number of gold medals won by india till now.
+6) Display the name of the athletes who secured gold in Badminton singles Men since 2000.
+7) Display  all the name of events which are held in Olympic 2008.
+8) Display the name of athlete who played in their home country.
+9) Print city name, country and year  olympic held in.
+10)Number of gold medals won by all countries in tennis till now in Descending order by medals won.
+11) Find the names of all player of the team who was the 1st runner up in football in 2004.
+
+Q1:
+SET SEARCH_PATH TO olympic;
+SELECT fname,lname,age
+From (participates Natural join athlete Natural join event) as a join olympic as e on(a.oid =  e.oid) 
+WHERE a.sname='100m race' AND e.year=2012;
+
+Q2:
+SET SEARCH_PATH TO olympic;
+SELECT fname,lname
+From (participates Natural join athlete Natural join country) as a join olympic as e on(a.oid =  e.oid) 
+WHERE e.year=2008 and cname='India';
+
+Q3:
+SET SEARCH_PATH TO olympic;
+SELECT cname , Count(DISTINCT PID) AS number 
+From (participates Natural join athlete Natural join country) as a join olympic as e on(a.oid =  e.oid) 
+WHERE Year=2012
+GROUP BY a.cname
+ORDER BY number DESC;
+
+Q4:
+SET SEARCH_PATH TO olympic;
+SELECT e.year , Count(DISTINCT PID) AS number 
+From (participates Natural join athlete Natural join country) as a join olympic as e on(a.oid =  e.oid) 
+WHERE cname='India'
+GROUP BY e.year;
+
+Q5:
+SET SEARCH_PATH TO olympic;
+SELECT year,count(PID) from (
+select pid,cname,rank,year From (participates Natural join athlete Natural join country) as a join olympic as e on(a.oid =  e.oid) 
+Union
+select pid,cname,rank,year From (participates Natural join team Natural join country) as a join olympic as e on(a.oid =  e.oid))as b
+WHERE cname='India' and rank=1
+group by year
+order by year;
+
+Q6:
+SET SEARCH_PATH TO olympic;
+SELECT fname,lname
+From (participates Natural join athlete Natural join event) 
+WHERE sname='Badminton singles' and rank=1;
+
+Q7:
+SELECT distinct EID,sname FROM (participates as p Natural Join Event as e Natural Join Olympic as o)
+WHERE o.year=2008;
+
+Q8:
+SET SEARCH_PATH TO olympic;
+SELECT fname,lname,cname,year 
+From (participates Natural join athlete Natural join country) as a join olympic as e on(a.oid =  e.oid) 
+where a.cid=e.cid
+
+Q9:
+SELECT c.cname,o.city,o.year FROM Olympic as o Natural Join Country as c
+
+Q10:
+SET SEARCH_PATH TO olympic;
+select cname,count(PID) as number from(
+SELECT PID,rank,cname,supersport,year From (participates Natural join athlete Natural join country natural join event) as a join olympic as e on(a.oid =  e.oid) 
+Union
+SELECT PID,rank,cname,supersport,year From (participates Natural join team Natural join country natural join event) as a join olympic as e on(a.oid =  e.oid) 
+) as b
+where supersport='Tennis' and rank=1
+group by cname
+order by number desc;
+
+Q11:
+SET SEARCH_PATH TO olympic;
+select fname,lname
+From ((team_members natural join athlete natural join event natural join team)as a join participates as b on(a.tid=b.tid))as c join olympic as e on(c.oid =  e.oid)
+where rank=2 and sname='Football(soccer)' and year=2004
+
